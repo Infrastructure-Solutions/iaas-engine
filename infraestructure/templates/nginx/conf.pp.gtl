@@ -1,0 +1,11 @@
+{{ range .Vhost }}
+nginx::resource::vhost { '{{ .Name }}':
+  www_root => '{{ .Path }} ',
+}
+  {{ if .Vcsrepo}}
+vcsrepo { '{{ .Vcsrepo.Path }}':
+  ensure     => '{{ .Vcsrepo.Version }}',
+  provider   => git,
+  source     => '{{ .Vcsrepo.Source }}',
+  submodules => false,
+}  {{ end }}{{ end }}

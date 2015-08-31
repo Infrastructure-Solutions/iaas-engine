@@ -1,0 +1,6 @@
+vcsrepo { '{{ .Path }}':
+  ensure     => '{{ .Version }}',
+  provider   => git,
+  source     => '{{ .Source }}',
+  submodules => false,
+}
