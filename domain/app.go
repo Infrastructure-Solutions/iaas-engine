@@ -1,3 +1,3 @@
 package domain
 
-type App struct {}
+type App struct{}

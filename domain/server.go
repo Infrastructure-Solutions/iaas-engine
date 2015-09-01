@@ -6,5 +6,5 @@ type Server struct {
 	Provisioner  string       `json:"provisioner"`
 	Distribution Distribution `json:"distribution"`
 	App          App          `json:"app"`
-	Packages []Package `json:"packages"`
+	Packages     []Package    `json:"packages"`
 }
