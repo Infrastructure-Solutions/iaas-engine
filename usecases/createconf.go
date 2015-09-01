@@ -33,8 +33,8 @@ func (interactor EngineInteractor) CreateConf(server domain.Server, zipFile io.W
 	var Files = []domain.File{}
 	
 	packages := []domain.Package{}
-	packages = server.GetPackages()
-	className := server.GetHostname()
+	packages = server.Packages
+	className := server.Hostname
 	
 	hieraClasses = append(hieraClasses, className)
 	

@@ -21,16 +21,16 @@ func (handler WebServiceHandler) CreateConfig(res http.ResponseWriter, req *http
 	defer req.Body.Close()
 
 	decoder := json.NewDecoder(req.Body)
-	server := domain.Myjson{}
-	if e := decoder.Decode(&server); e != nil {
+	mainJSON := domain.Myjson{}
+	if e := decoder.Decode(&mainJSON); e != nil {
 		log.Fatal(e)
 	}
 
-	servidor := domain.Server{}
-	servidor = server.GetServer()
+	server := domain.Server{}
+	server = mainJSON.Server
 
 	res.Header().Set("Content-Type", "application/zip")
 	res.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", "algo"))
-	handler.EngineInteractor.CreateConf(servidor, res)
+	handler.EngineInteractor.CreateConf(server, res)
 	
 }
