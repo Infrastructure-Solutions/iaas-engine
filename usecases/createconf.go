@@ -17,6 +17,11 @@ import (
 type EngineInteractor struct {
 }
 
+type Template struct {
+	Name   string
+	Config interface{}
+	Path   string
+}
 var configs = []struct {
 	Name, Path string
 }{
@@ -30,40 +35,55 @@ var configs = []struct {
 }
 
 func (interactor EngineInteractor) CreateConf(server domain.Server, zipFile io.Writer) {
-	var hieraClasses = []string{}
 	var Files = []domain.File{}
 
 	packages := []domain.Package{}
 	packages = server.Packages
 	className := server.Hostname
 
-	hieraClasses = append(hieraClasses, className)
-
-	content := createPackages(packages, hieraClasses)
-
-	manifest := domain.Manifest{ClassName: className, Content: content}
-
-	path := "environments/tequilaware/modules/web/manifests/init.pp"
-	doc, error := infraestructure.WriteClass(manifest)
-	if error != nil {
-		fmt.Println(error)
-	}
-
-	file := domain.File{path, doc}
-	Files = append(Files, file)
-
-	path = "hieradata/tequilaware/node/web.yaml"
-	doc1, error := infraestructure.WriteHiera(hieraClasses)
-	if error != nil {
-		fmt.Println(error)
-	}
-	file1 := domain.File{path, doc1}
-	Files = append(Files, file1)
-
+	Files = append(Files, getPuppetTemplates(packages, className)...)
 	Files = append(Files, getPuppetFiles()...)
 
 	writeZip(zipFile, Files)
 
+}
+
+func getPuppetTemplates(packages []domain.Package, className string) []domain.File {
+
+	var hieraClasses = []string{}
+	var files = []domain.File{}
+	var templates = []Template{}
+
+	hieraClasses = append(hieraClasses, className)
+
+
+	content := createPackages(packages, hieraClasses)
+	fmt.Println(hieraClasses)
+	manifest := domain.Manifest{ClassName: className, Content: content}
+	init := Template{
+		"class",
+		manifest,
+		"environments/tequilaware/modules/web/manifests/init.pp",
+	}
+	templates = append(templates, init)
+	
+	init = Template{
+		"hiera",
+		hieraClasses,
+		"hieradata/tequilaware/node/web.yaml",
+	}
+	templates = append(templates, init)
+	
+	for _, file := range templates{
+		doc, error := infraestructure.WriteTemplate(file.Config, file.Name)
+		if error != nil {
+			fmt.Println(error)
+		}
+		fmt.Println(doc)
+		files = append(files, domain.File{file.Path, doc})
+	}
+	return files
+		
 }
 
 func getPuppetFiles() []domain.File {
@@ -88,7 +108,7 @@ func createPackages(packages []domain.Package, hieraClasses []string) string {
 				hieraClasses = append(hieraClasses, elem.Name)
 				nginxConf := domain.NginxConfig{}
 				json.Unmarshal(elem.Config, &nginxConf)
-				doc, error := infraestructure.WriteConf(nginxConf, elem.Name)
+				doc, error := infraestructure.WriteTemplate(nginxConf, elem.Name)
 				if error != nil {
 					fmt.Println(error)
 				}
@@ -97,7 +117,7 @@ func createPackages(packages []domain.Package, hieraClasses []string) string {
 				fmt.Println("Uknown config")
 			}
 		} else {
-			doc, error := infraestructure.WritePackages(elem)
+			doc, error := infraestructure.WriteTemplate(elem, "packages")
 			if error != nil {
 				fmt.Println(error)
 			}
