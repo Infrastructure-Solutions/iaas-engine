@@ -1,66 +1,66 @@
 package usecases
 
 import (
-	"github.com/iaas-engine/infraestructure"
-	"github.com/iaas-engine/domain"
+	"archive/zip"
 	"encoding/json"
 	"fmt"
+	"github.com/iaas-engine/domain"
+	"github.com/iaas-engine/infraestructure"
 	"io"
 	"log"
-	"archive/zip"
-	"time"
-	"strings"
 	"path"
+	"strings"
+	"time"
 )
 
 type EngineInteractor struct {
 }
 
-var configs = []struct{
+var configs = []struct {
 	Name, Path string
 }{
 	{"provisioner.sh", "provisioner.sh"},
 	{"Vagrantfile", "Vagrantfile"},
-	{"hiera.yaml","hiera.yaml"},
-	{".gitmodules",".gitmodules"},
-	{"environment.conf","environments/tequilaware/environment.conf"},
-	{"hosts.yaml","hieradata/hosts.yaml"},
-	{"site.pp","manifests/site.pp"},
+	{"hiera.yaml", "hiera.yaml"},
+	{".gitmodules", ".gitmodules"},
+	{"environment.conf", "environments/tequilaware/environment.conf"},
+	{"hosts.yaml", "hieradata/hosts.yaml"},
+	{"site.pp", "manifests/site.pp"},
 }
 
 func (interactor EngineInteractor) CreateConf(server domain.Server, zipFile io.Writer) {
 	var hieraClasses = []string{}
 	var Files = []domain.File{}
-	
+
 	packages := []domain.Package{}
 	packages = server.Packages
 	className := server.Hostname
-	
+
 	hieraClasses = append(hieraClasses, className)
-	
+
 	content := createPackages(packages, hieraClasses)
-	
-	manifest := domain.Manifest{ClassName:className, Content:content}
-	
+
+	manifest := domain.Manifest{ClassName: className, Content: content}
+
 	path := "environments/tequilaware/modules/web/manifests/init.pp"
 	doc, error := infraestructure.WriteClass(manifest)
 	if error != nil {
 		fmt.Println(error)
 	}
 
-	file := domain.File{path,doc}
+	file := domain.File{path, doc}
 	Files = append(Files, file)
-	
+
 	path = "hieradata/tequilaware/node/web.yaml"
 	doc1, error := infraestructure.WriteHiera(hieraClasses)
 	if error != nil {
 		fmt.Println(error)
 	}
-	file1 := domain.File{path,doc1}
+	file1 := domain.File{path, doc1}
 	Files = append(Files, file1)
-	
+
 	Files = append(Files, getPuppetFiles()...)
-	
+
 	writeZip(zipFile, Files)
 
 }
@@ -69,7 +69,7 @@ func getPuppetFiles() []domain.File {
 	paths := "infraestructure/files/puppet"
 	var files = []domain.File{}
 	for _, file := range configs {
-		content, err := infraestructure.ReadFile(path.Join(paths,file.Name))
+		content, err := infraestructure.ReadFile(path.Join(paths, file.Name))
 		if err != nil {
 			log.Print(err)
 		}
@@ -78,7 +78,7 @@ func getPuppetFiles() []domain.File {
 	return files
 }
 
-func createPackages(packages []domain.Package, hieraClasses []string) string { 
+func createPackages(packages []domain.Package, hieraClasses []string) string {
 	var manifestContent string
 	for _, elem := range packages {
 		if elem.Config != nil {
@@ -92,7 +92,8 @@ func createPackages(packages []domain.Package, hieraClasses []string) string {
 					fmt.Println(error)
 				}
 				manifestContent += doc
-			default : fmt.Println("Uknown config")
+			default:
+				fmt.Println("Uknown config")
 			}
 		} else {
 			doc, error := infraestructure.WritePackages(elem)

@@ -1,10 +1,10 @@
 package infraestructure
 
 import (
-	"text/template"
 	"bytes"
-	"path"
 	"io/ioutil"
+	"path"
+	"text/template"
 )
 
 var templates_dir string = "infraestructure/templates"
@@ -28,11 +28,11 @@ func WriteHiera(conf interface{}) (string, error) {
 
 func writeTemplate(conf interface{}, pack string) (string, error) {
 	var doc bytes.Buffer
-	t, err := template.ParseFiles(path.Join(templates_dir,pack,conf_file))
+	t, err := template.ParseFiles(path.Join(templates_dir, pack, conf_file))
 	if err != nil {
 		return doc.String(), err
 	}
-	if e := t.Execute(&doc, conf); e != nil{
+	if e := t.Execute(&doc, conf); e != nil {
 		return doc.String(), e
 	}
 	return doc.String(), nil

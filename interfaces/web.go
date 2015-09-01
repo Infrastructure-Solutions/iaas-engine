@@ -1,12 +1,12 @@
 package interfaces
 
 import (
-	"github.com/iaas-engine/domain"	
-	"net/http"
 	"encoding/json"
-	"log"
-	"io"
 	"fmt"
+	"github.com/iaas-engine/domain"
+	"io"
+	"log"
+	"net/http"
 )
 
 type EngineInteractor interface {
@@ -17,7 +17,7 @@ type WebServiceHandler struct {
 	EngineInteractor EngineInteractor
 }
 
-func (handler WebServiceHandler) CreateConfig(res http.ResponseWriter, req *http.Request){
+func (handler WebServiceHandler) CreateConfig(res http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 
 	decoder := json.NewDecoder(req.Body)
@@ -32,5 +32,5 @@ func (handler WebServiceHandler) CreateConfig(res http.ResponseWriter, req *http
 	res.Header().Set("Content-Type", "application/zip")
 	res.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", "algo"))
 	handler.EngineInteractor.CreateConf(server, res)
-	
+
 }
