@@ -7,6 +7,7 @@ import (
 	"github.com/iaas-engine/domain"
 	"github.com/iaas-engine/infraestructure"
 	"io"
+	"io/ioutil"
 	"log"
 	"path"
 	"strings"
@@ -69,11 +70,11 @@ func getPuppetFiles() []domain.File {
 	paths := "infraestructure/files/puppet"
 	var files = []domain.File{}
 	for _, file := range configs {
-		content, err := infraestructure.ReadFile(path.Join(paths, file.Name))
+		content, err := ioutil.ReadFile(path.Join(paths, file.Name))
 		if err != nil {
 			log.Print(err)
 		}
-		files = append(files, domain.File{file.Path, content})
+		files = append(files, domain.File{file.Path, string(content)})
 	}
 	return files
 }

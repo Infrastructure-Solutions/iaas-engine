@@ -2,7 +2,6 @@ package infraestructure
 
 import (
 	"bytes"
-	"io/ioutil"
 	"path"
 	"text/template"
 )
@@ -36,12 +35,4 @@ func writeTemplate(conf interface{}, pack string) (string, error) {
 		return doc.String(), e
 	}
 	return doc.String(), nil
-}
-
-func ReadFile(file string) (string, error) {
-	content, err := ioutil.ReadFile(file)
-	if err != nil {
-		return "", err
-	}
-	return string(content), nil
 }
