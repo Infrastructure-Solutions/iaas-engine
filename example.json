@@ -1,0 +1,61 @@
+{
+    "user": {
+	"provider": {
+	    "name"     : "digitalocean",
+	    "user_name": "leonel perea"
+	},
+	"vcs": {
+	    "url"      : "github.com",
+	    "user_name": "Infraestructure-Solutions"
+	},
+	"public_keys": [
+	    {
+		"title": "leo",
+		"key": "llave1"
+	    },
+	    {
+		"title": "tony",
+		"key": "thetonymaster"
+	    }
+	]
+    },
+    "server": {
+	"domain": "tequilaware",
+	"hostname" : "web",
+	"provisioner": "puppet",
+	"distribution": {
+	    "os": "debian",
+	    "version": "8.0"
+	},
+        "app" : {},
+	"packages": [
+	    {
+
+		"name": "git",
+		"version": "latest"
+	    },
+	    {
+		"name": "ruby",
+		"version": "latest"
+	    },
+	    {
+		"name": "nginx",
+		"version": "latest",
+		"config": {
+		    "vhost": [
+			{"name":"tequilaware.com",
+			 "path": "/var/www/tequilaware.com",
+			 "vcsrepo": {
+			     "path": "/var/www/tequilaware.com",
+			     "version": "latest",
+			     "source": "https://github.com/ramonbadillo/webpage.git"
+			 }
+
+			}
+		    ],
+		    "location": []
+		}
+	    }
+	]
+    }
+}
