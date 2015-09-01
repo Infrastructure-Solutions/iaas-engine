@@ -57,7 +57,7 @@ func getPuppetTemplates(packages []domain.Package, className string) []domain.Fi
 	hieraClasses = append(hieraClasses, className)
 
 
-	content := createPackages(packages, hieraClasses)
+	content := createPackages(packages, &hieraClasses)
 	fmt.Println(hieraClasses)
 	manifest := domain.Manifest{ClassName: className, Content: content}
 	init := Template{
@@ -99,13 +99,13 @@ func getPuppetFiles() []domain.File {
 	return files
 }
 
-func createPackages(packages []domain.Package, hieraClasses []string) string {
+func createPackages(packages []domain.Package, hieraClasses *[]string) string {
 	var manifestContent string
 	for _, elem := range packages {
 		if elem.Config != nil {
 			switch {
 			case elem.Name == "nginx":
-				hieraClasses = append(hieraClasses, elem.Name)
+				*hieraClasses = append(*hieraClasses, elem.Name)
 				nginxConf := domain.NginxConfig{}
 				json.Unmarshal(elem.Config, &nginxConf)
 				doc, error := infraestructure.WriteTemplate(nginxConf, elem.Name)
