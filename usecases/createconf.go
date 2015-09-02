@@ -117,7 +117,7 @@ func createPackages(packages []domain.Package, hieraClasses *[]string) string {
 				fmt.Println("Uknown config")
 			}
 		} else {
-			doc, error := infraestructure.WriteTemplate(elem, "packages")
+			doc, error := infraestructure.WriteTemplate(elem, "package")
 			if error != nil {
 				fmt.Println(error)
 			}
