@@ -30,7 +30,7 @@ func (handler WebServiceHandler) CreateConfig(res http.ResponseWriter, req *http
 	server = mainJSON.Server
 
 	res.Header().Set("Content-Type", "application/zip")
-	res.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", "algo"))
+	res.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", "puppet.zip"))
 	handler.EngineInteractor.CreateConf(server, res)
 
 }
