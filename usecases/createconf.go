@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/iaas-engine/domain"
-	"github.com/iaas-engine/infraestructure"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,6 +14,20 @@ import (
 )
 
 type EngineInteractor struct {
+	filesPath  string
+	FileWriter FileWriter
+}
+
+func NewEngineInteractor(filesPath string, fileWriter FileWriter) (*EngineInteractor, error) {
+	interactor := &EngineInteractor{
+		filesPath: filesPath,
+		FileWriter: fileWriter,
+	}
+	return interactor, nil
+}
+
+type FileWriter interface {
+	WriteTemplate(conf interface{}, pack string) (string, error)
 }
 
 type Template struct {
@@ -22,6 +35,7 @@ type Template struct {
 	Config interface{}
 	Path   string
 }
+
 var configs = []struct {
 	Name, Path string
 }{
@@ -41,14 +55,14 @@ func (interactor EngineInteractor) CreateConf(server domain.Server, zipFile io.W
 	packages = server.Packages
 	className := server.Hostname
 
-	Files = append(Files, getPuppetTemplates(packages, className)...)
-	Files = append(Files, getPuppetFiles()...)
+	Files = append(Files, interactor.getPuppetTemplates(packages, className)...)
+	Files = append(Files, interactor.getPuppetFiles()...)
 
 	writeZip(zipFile, Files)
 
 }
 
-func getPuppetTemplates(packages []domain.Package, className string) []domain.File {
+func (interactor EngineInteractor) getPuppetTemplates(packages []domain.Package, className string) []domain.File {
 
 	var hieraClasses = []string{}
 	var files = []domain.File{}
@@ -57,7 +71,7 @@ func getPuppetTemplates(packages []domain.Package, className string) []domain.Fi
 	hieraClasses = append(hieraClasses, className)
 
 
-	content := createPackages(packages, &hieraClasses)
+	content := interactor.createPackages(packages, &hieraClasses)
 	fmt.Println(hieraClasses)
 	manifest := domain.Manifest{ClassName: className, Content: content}
 	init := Template{
@@ -75,7 +89,7 @@ func getPuppetTemplates(packages []domain.Package, className string) []domain.Fi
 	templates = append(templates, init)
 	
 	for _, file := range templates{
-		doc, error := infraestructure.WriteTemplate(file.Config, file.Name)
+		doc, error := interactor.FileWriter.WriteTemplate(file.Config, file.Name)
 		if error != nil {
 			fmt.Println(error)
 		}
@@ -86,11 +100,10 @@ func getPuppetTemplates(packages []domain.Package, className string) []domain.Fi
 		
 }
 
-func getPuppetFiles() []domain.File {
-	paths := "infraestructure/files/puppet"
+func (interactor EngineInteractor) getPuppetFiles() []domain.File {
 	var files = []domain.File{}
 	for _, file := range configs {
-		content, err := ioutil.ReadFile(path.Join(paths, file.Name))
+		content, err := ioutil.ReadFile(path.Join(interactor.filesPath, file.Name))
 		if err != nil {
 			log.Print(err)
 		}
@@ -99,7 +112,7 @@ func getPuppetFiles() []domain.File {
 	return files
 }
 
-func createPackages(packages []domain.Package, hieraClasses *[]string) string {
+func (interactor EngineInteractor) createPackages(packages []domain.Package, hieraClasses *[]string) string {
 	var manifestContent string
 	for _, elem := range packages {
 		if elem.Config != nil {
@@ -108,7 +121,7 @@ func createPackages(packages []domain.Package, hieraClasses *[]string) string {
 				*hieraClasses = append(*hieraClasses, elem.Name)
 				nginxConf := domain.NginxConfig{}
 				json.Unmarshal(elem.Config, &nginxConf)
-				doc, error := infraestructure.WriteTemplate(nginxConf, elem.Name)
+				doc, error := interactor.FileWriter.WriteTemplate(nginxConf, elem.Name)
 				if error != nil {
 					fmt.Println(error)
 				}
@@ -117,7 +130,7 @@ func createPackages(packages []domain.Package, hieraClasses *[]string) string {
 				fmt.Println("Uknown config")
 			}
 		} else {
-			doc, error := infraestructure.WriteTemplate(elem, "package")
+			doc, error := interactor.FileWriter.WriteTemplate(elem, "package")
 			if error != nil {
 				fmt.Println(error)
 			}
