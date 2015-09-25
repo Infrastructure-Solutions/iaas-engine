@@ -9,7 +9,7 @@ import (
 	"github.com/iaas-engine/infraestructure"
 )
 
-var defaultPath = "iaas-engine.conf"
+var defaultPath = "/etc/iaas-engine.conf"
 var confFilePath = flag.String("conf", defaultPath, "Custom Path for configuration file")
 
 func main() {
