@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description><%= @description %></description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>15</daysToKeep>
+    <numToKeep>20</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <scmCheckoutRetryCount>1</scmCheckoutRetryCount>
+  <assignedNode><%= @assigned_jnode %></assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>apt-get update;
+apt-get upgrade -y --fix-missing;
+environment=&quot;$(echo ${JOB_NAME##*/} | cut -d &apos;.&apos; -f 1)&quot;
+hostname=&quot;$(echo ${JOB_NAME##*/} | cut -d &apos;.&apos; -f 2)&quot;
+hostname $hostname
+export FACTER_jenkins_job_name=${JOB_NAME##*/}
+export FACTER_agent_environment=$environment
+wget -q &quot;https://raw.githubusercontent.com/AAlvz/iaas/master/provisioner.sh?token=ADW_Kf21NmswfYkySphsihe33x6xT-sjks5V42HvwA%3D%3D&quot; -O /opt/provisioner.sh
+/bin/sh /opt/provisioner.sh</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.Mailer plugin="mailer@1.11">
+      <recipients>alfonso.alvz@gmail.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+</project>
