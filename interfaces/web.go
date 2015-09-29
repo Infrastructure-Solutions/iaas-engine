@@ -11,11 +11,17 @@ import (
 
 type EngineInteractor interface {
 	CreateZip(server domain.Server, zipFile io.Writer)
-	CreateRepo(server domain.Server, files io.Writer)
+	CreateRepo(server domain.Server, user, token string)
 }
 
 type WebServiceHandler struct {
 	EngineInteractor EngineInteractor
+}
+
+type User struct {
+	ID          int
+	Username    string
+	AccessToken string
 }
 
 func getConfig(req *http.Request) domain.Server {
@@ -37,7 +43,7 @@ func (handler WebServiceHandler) CreateZip(res http.ResponseWriter, req *http.Re
 	
 	res.Header().Set("Content-Type", "application/zip")
 	res.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", "puppet.zip"))
-	handler.EngineInteractor.CreateConf(server, res)
+
 	server := getConfig(req)
 	
 	handler.EngineInteractor.CreateZip(server, res)
@@ -46,11 +52,15 @@ func (handler WebServiceHandler) CreateZip(res http.ResponseWriter, req *http.Re
 
 func (handler WebServiceHandler) CreateRepo(res http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
+	
+	token := req.Header.Get("gitToken")
+	user := req.Header.Get("gitUser")
 
+	
 	
 	res.Header().Set("Content-Type", "application/json")
 	server := getConfig(req)
 	
-	handler.EngineInteractor.CreateRepo(server, res)
+	handler.EngineInteractor.CreateRepo(server, user, token)
 
 }

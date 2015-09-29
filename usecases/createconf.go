@@ -9,11 +9,19 @@ import (
 
 type EngineInteractor struct {
 	FileWriter FileWriter
+	Git Git
 }
 
-func NewEngineInteractor(fileWriter FileWriter) (*EngineInteractor, error) {
+type Git interface {
+	CreateRepo(name, org string, private bool) error
+	GetRepo(name string) error
+	SetAuth(user, token string)
+}
+
+func NewEngineInteractor(fileWriter FileWriter, git Git) (*EngineInteractor, error) {
 	interactor := &EngineInteractor{
 		FileWriter: fileWriter,
+		Git: git,
 	}
 	return interactor, nil
 }
@@ -30,9 +38,11 @@ type Template struct {
 	Path   string
 }
 
-func (interactor EngineInteractor) CreateRepo(server domain.Server, files io.Writer) {
+func (interactor EngineInteractor) CreateRepo(server domain.Server, user, token string) {
 	var Files = []domain.File{}
 
+	interactor.Git.SetAuth(user, token)
+	
 	packages := []domain.Package{}
 	packages = server.Packages
 	className := server.Hostname
@@ -40,7 +50,10 @@ func (interactor EngineInteractor) CreateRepo(server domain.Server, files io.Wri
 	Files = append(Files, interactor.getPuppetTemplates(packages, className)...)
 	Files = append(Files, interactor.FileWriter.GetPuppetFiles()...)
 
-//	gitRepo(files, Files)
+	err := interactor.Git.GetRepo("infTest")
+	if err != nil {
+		interactor.Git.CreateRepo("infTest", "", false)
+	}
 }
 
 func (interactor EngineInteractor) CreateZip(server domain.Server, zipFile io.Writer) {
