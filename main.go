@@ -26,7 +26,7 @@ func main() {
 		panic("Cannot set templates path")
 	}
 
-	git := interfaces.NewGit("http://localhost:7000")
+	git := interfaces.NewGit("http://localhost:7000/")
 	
 	interactor, err := usecases.NewEngineInteractor(writer, git)
 	if err != nil {

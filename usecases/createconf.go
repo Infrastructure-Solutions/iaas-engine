@@ -38,7 +38,7 @@ type Template struct {
 	Path   string
 }
 
-func (interactor EngineInteractor) CreateRepo(server domain.Server, user, token string) {
+func (interactor EngineInteractor) CreateRepo(server domain.Server, user, token string) error { 
 	var Files = []domain.File{}
 
 	interactor.Git.SetAuth(user, token)
@@ -51,12 +51,16 @@ func (interactor EngineInteractor) CreateRepo(server domain.Server, user, token 
 	Files = append(Files, interactor.FileWriter.GetPuppetFiles()...)
 
 	err := interactor.Git.GetRepo("infTest")
+
 	if err != nil {
 		interactor.Git.CreateRepo("infTest", "", false)
+		return nil
 	}
+
+	return err
 }
 
-func (interactor EngineInteractor) CreateZip(server domain.Server, zipFile io.Writer) {
+func (interactor EngineInteractor) CreateZip(server domain.Server, zipFile io.Writer) { 
 	var Files = []domain.File{}
 
 	packages := []domain.Package{}
@@ -80,7 +84,7 @@ func (interactor EngineInteractor) getPuppetTemplates(packages []domain.Package,
 
 
 	content := interactor.createPackages(packages, &hieraClasses)
-	fmt.Println(hieraClasses)
+
 	manifest := domain.Manifest{ClassName: className, Content: content}
 	init := Template{
 		"class",
@@ -101,7 +105,7 @@ func (interactor EngineInteractor) getPuppetTemplates(packages []domain.Package,
 		if error != nil {
 			fmt.Println(error)
 		}
-		fmt.Println(doc)
+
 		files = append(files, domain.File{file.Path, doc})
 	}
 	return files

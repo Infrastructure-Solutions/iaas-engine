@@ -11,7 +11,7 @@ import (
 
 type EngineInteractor interface {
 	CreateZip(server domain.Server, zipFile io.Writer)
-	CreateRepo(server domain.Server, user, token string)
+	CreateRepo(server domain.Server, user, token string) error
 }
 
 type WebServiceHandler struct {
@@ -55,12 +55,15 @@ func (handler WebServiceHandler) CreateRepo(res http.ResponseWriter, req *http.R
 	
 	token := req.Header.Get("gitToken")
 	user := req.Header.Get("gitUser")
-
-	
 	
 	res.Header().Set("Content-Type", "application/json")
 	server := getConfig(req)
 	
-	handler.EngineInteractor.CreateRepo(server, user, token)
+	err := handler.EngineInteractor.CreateRepo(server, user, token)
+	if err != nil{
+		res.WriteHeader(http.StatusInternalServerError)
+	} else {
+		res.WriteHeader(http.StatusOK)
+	}
 
 }

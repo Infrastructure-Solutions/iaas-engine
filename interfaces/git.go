@@ -56,6 +56,7 @@ func (git Git) CreateRepo(name, org string, private bool) error {
 	}
 	
 	reader := bytes.NewReader(repoRequestJSON)
+	
 	return git.postJSON("repos", git.auth.ApiToken, git.auth.Username, reader, nil)
 }
 
@@ -68,19 +69,21 @@ func (git Git) get(path, token, user string, body interface{}) error {
 		return err
 	}
 
-	requestUrl.Path = fmt.Sprintf("user/%s/%s", user, path)
+	requestUrl.Path = fmt.Sprintf("v1/github/user/%s/%s", user, path)
 	req, err := http.NewRequest("GET", requestUrl.String(), nil)
 	if err != nil {
 		return err
 	}
-
+	
+	req.Header.Add("token", git.auth.ApiToken)
+	
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("error: HTTP GET returned status code returned:%%d", resp.StatusCode))
+		return errors.New(fmt.Sprintf("error: HTTP GET returned status code returned:%d", resp.StatusCode))
 	}
 
 	return git.parseJsonResponse(resp, body)
@@ -95,13 +98,18 @@ func (git Git) postJSON(path, token, user string, jsonBody io.Reader, body inter
 		return  err
 	}
 
-	requestUrl.Path = fmt.Sprintf("user/%s/%s", user, path)
+	requestUrl.Path = fmt.Sprintf("v1/github/user/%s/%s", user, path)
 	req, err := http.NewRequest("POST", requestUrl.String(), jsonBody)
 	if err != nil {
 		return err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("token", token)
+
+	fmt.Println(requestUrl.String())
+	fmt.Println(user)
+	fmt.Println(token)
 
 	resp, err := client.Do(req)
 	if err != nil {
