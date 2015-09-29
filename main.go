@@ -21,12 +21,12 @@ func main() {
 		panic("Cannot parse configuration")
 	}
 
-	writer, err := infraestructure.NewFileWriter(config.TemplatesPath)
+	writer, err := infraestructure.NewFileWriter(config.TemplatesPath, config.FilesPath)
 	if err != nil {
 		panic("Cannot set templates path")
 	}
 
-	interactor, err := usecases.NewEngineInteractor(config.FilesPath, writer)
+	interactor, err := usecases.NewEngineInteractor(writer)
 	if err != nil {
 		panic("Cannot set files path")
 	}
@@ -37,7 +37,9 @@ func main() {
 
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/iaas").Subrouter()
-	subrouter.HandleFunc("/create", handler.CreateConfig).Methods("POST")
+	createRouter := subrouter.PathPrefix("/create").Subrouter()
+	createRouter.HandleFunc("/zip", handler.CreateZip).Methods("POST")
+	createRouter.HandleFunc("/repo", handler.CreateRepo).Methods("POST")
 
 	n := negroni.Classic()
 	n.UseHandler(r)
