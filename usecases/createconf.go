@@ -16,6 +16,7 @@ type Git interface {
 	CreateRepo(name, org string, private bool) error
 	GetRepo(name string) error
 	SetAuth(user, token string)
+	UploadFiles(name string, files []domain.File) error
 }
 
 func NewEngineInteractor(fileWriter FileWriter, git Git) (*EngineInteractor, error) {
@@ -27,7 +28,7 @@ func NewEngineInteractor(fileWriter FileWriter, git Git) (*EngineInteractor, err
 }
 
 type FileWriter interface {
-	WriteTemplate(conf interface{}, pack string) (string, error)
+	WriteTemplate(conf interface{}, pack string) ([]byte, error)
 	WriteZip(zipFile io.Writer, Files []domain.File)
 	GetPuppetFiles() []domain.File
 }
@@ -54,6 +55,7 @@ func (interactor EngineInteractor) CreateRepo(server domain.Server, user, token 
 
 	if err != nil {
 		interactor.Git.CreateRepo("infTest", "", false)
+		interactor.Git.UploadFiles("infTest", Files)
 		return nil
 	}
 
@@ -125,7 +127,7 @@ func (interactor EngineInteractor) createPackages(packages []domain.Package, hie
 				if error != nil {
 					fmt.Println(error)
 				}
-				manifestContent += doc
+				manifestContent += string(doc)
 			default:
 				fmt.Println("Uknown config")
 			}
@@ -134,7 +136,7 @@ func (interactor EngineInteractor) createPackages(packages []domain.Package, hie
 			if error != nil {
 				fmt.Println(error)
 			}
-			manifestContent += doc
+			manifestContent += string(doc)
 		}
 	}
 	return manifestContent

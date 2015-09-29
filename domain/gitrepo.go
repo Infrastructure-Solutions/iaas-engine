@@ -28,8 +28,3 @@ type Author struct {
 	Branch  string `json:"branch,omitempty"`
 	Email   string `json:"email"`
 }
-
-// type File struct {
-// 	Path    string `json:"path"`
-// 	Content []byte `json:"content"`
-// }

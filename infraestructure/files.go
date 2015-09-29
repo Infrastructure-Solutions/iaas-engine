@@ -39,18 +39,18 @@ func NewFileWriter (templatesPath string, filesPath string) (*FileWriter, error)
 	return fileWriter, nil
 }
 
-func (fileWriter FileWriter) WriteTemplate(conf interface{}, pack string) (string, error) {
+func (fileWriter FileWriter) WriteTemplate(conf interface{}, pack string) ([]byte, error) {
 	var conf_file string = "conf.pp.gtl"
 	var doc bytes.Buffer
 	
 	t, err := template.ParseFiles(path.Join(fileWriter.templatesPath, pack, conf_file))
 	if err != nil {
-		return doc.String(), err
+		return doc.Bytes(), err
 	}
 	if e := t.Execute(&doc, conf); e != nil {
-		return doc.String(), e
+		return doc.Bytes(), e
 	}
-	return doc.String(), nil
+	return doc.Bytes(), nil
 }
 
 
@@ -67,7 +67,7 @@ func (fileWriter FileWriter) WriteZip(zipFile io.Writer, Files []domain.File) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		reader := strings.NewReader(file.Content)
+		reader := strings.NewReader(string(file.Content))
 		if _, err = io.Copy(fw, reader); err != nil {
 			log.Fatal(err)
 		}
@@ -86,7 +86,7 @@ func (fileWriter FileWriter) GetPuppetFiles() []domain.File {
 		if err != nil {
 			log.Print(err)
 		}
-		files = append(files, domain.File{file.Path, string(content)})
+		files = append(files, domain.File{file.Path, content})
 	}
 	return files
 }
